@@ -1,54 +1,66 @@
-const TABLA = 'users'
-
-const { nanoid } = require('nanoid')
+const nanoid = require('nanoid')
 const auth = require('../auth')
 
-module.exports = (inyectStore) => {
-  let store = inyectStore
+const TABLA = 'users'
+
+module.exports = function (injectedStore) {
+  let store = injectedStore
   if (!store) {
-    store = require('../../../store/mysql')
+    store = require('../../../store/dummy')
   }
-  
-  const list = () => {
+
+  function list() {
     return store.list(TABLA)
   }
 
-  const get = (id) => {
+  function get(id) {
     return store.get(TABLA, id)
   }
 
-  const upsert = async (data) => {
-    const userData = {
-      name: data.name
+  async function upsert(data) {
+    const user = {
+      name: data.name,
+      username: data.username
     }
 
     if (data.id) {
-      userData.id = data.id
+      user.id = data.id
     } else {
-      userData.id = nanoid()
+      user.id = nanoid()
     }
 
-    if (data.name || data.password) {
+    if (data.password || data.username) {
+      console.log('va a registar')
       await auth.upsert({
-        id: userData.id,
-        name: data.name,
-        password: data.password
+        id: user.id,
+        username: user.username,
+        password: data.password,
       })
     }
-    console.log(data)
-    console.log(userData)
 
-    return store.upsert(TABLA, userData)
+    return store.upsert(TABLA, user)
   }
 
-  const remove = (id) => {
-    return store.remove(TABLA, id)
+  function follow(from, to){
+    return store.insert(TABLA + '_follow', {
+      user_from: from,
+      user_to: to
+    })
   }
+
+  async function follow_by(id){
+    const join = {}
+        join[TABLA] = 'user_to' // { user: 'user_to' }
+        const query = { user_from: id }
+		
+		return await store.query(TABLA + '_follow', query, join)
+	}
 
   return {
     list,
     get,
     upsert,
-    remove
+    follow,
+    follow_by
   }
 }

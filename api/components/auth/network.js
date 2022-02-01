@@ -1,32 +1,16 @@
 const express = require('express')
 
 const response = require('../../../network/response')
-const controller = require('./index')
+const Controller = require('./index')
 
 const router = express.Router()
 
-router.post('/signup', (req, res) => {
-  const data = req.body
-  controller.upsert(data)
-    .then(lista => {
-      response.success(req, res, lista, 201)
+router.post('/login', function (req, res, next) {
+  Controller.login(req.body.username, req.body.password)
+    .then(token => {
+      response.success(req, res, token, 200)
     })
-    .catch(e => {
-      console.error(e)
-      response.error(req, res, 'Unexpected Error', 500)
-    })
-})
-
-router.post('/signin', (req, res) => {
-  const data = req.body
-  controller.get(data)
-    .then(result => {
-      response.success(req, res, result, 200)
-    })
-    .catch(error => {
-      console.error(error)
-      response.error(req, res, 'Unexpected Error', 500)
-    })
+    .catch(next)
 })
 
 module.exports = router

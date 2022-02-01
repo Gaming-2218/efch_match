@@ -1,21 +1,28 @@
 const express = require('express')
 
+const swaggerUi = require('swagger-ui-express')
+
 const config = require('../config.js')
+const routes = require('./network/routes')
+const errors = require('../network/errors')
 const morgan = require('morgan')
 
-const routes = require('../network/routes')
-const swaggerUI = require('swagger-ui-express')
-const swaggerDocument = require('./swagger.json')
 const app = express()
 
 app.use(express.json())
-app.use(express.urlencoded({ extended: true }))
+
+const swaggerDoc = require('./swagger.json') // eslint-disable-line
+
+
+// Middlewares
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDoc))
 app.use(morgan('dev'))
 
-// ROUER
+// Routes
 routes(app)
-app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerDocument))
+
+app.use(errors)
 
 app.listen(config.api.port, () => {
-    console.log('http://localhost:' + config.api.port)
+    console.log('Api escuchando en el puerto ', config.api.port)
 })

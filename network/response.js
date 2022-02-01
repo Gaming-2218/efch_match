@@ -2,10 +2,10 @@ exports.success = function (req, res, message, status) {
     let statusCode = status || 200;
     let statusMessage = message || '';
 
-    res.status(statusCode).send({
+    res.status(status).send({
         error: false,
         status: status,
-        body: statusMessage
+        body: message,
     });
 }
 
@@ -16,6 +16,6 @@ exports.error = function (req, res, message, status) {
     res.status(statusCode).send({
         error: false,
         status: status,
-        body: statusMessage
+        body: message,
     });
 }
